@@ -1,0 +1,29 @@
+{
+  "name": "blog-domain-challenge-2",
+  "version": "1.0.0",
+  "description": "- Use an ORM to implement a database design\r - Use an ORM to create seed data in a database\r - Design and build a RESTful API",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexLind/blog-domain-challenge-2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlexLind/blog-domain-challenge-2/issues"
+  },
+  "homepage": "https://github.com/AlexLind/blog-domain-challenge-2#readme",
+  "devDependencies": {
+    "prisma": "^4.7.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.7.0"
+  }
+}
