@@ -22,6 +22,8 @@ app.use(express.urlencoded({ extended: true }));
 
 const usersRouter = require('./routers/users')
 app.use('/users', usersRouter)
+const postsRouter = require('./routers/posts')
+app.use('/users/', postsRouter)
 
 
 // const customerRouter = require('./routers/customer');
