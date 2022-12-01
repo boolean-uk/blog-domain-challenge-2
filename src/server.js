@@ -2,7 +2,7 @@ const express = require('express');
 require('express-async-errors');
 const app = express();
 const { Prisma } = require("@prisma/client");
-const { MissingFieldsError } = require('../src/utils/errors')
+const { MissingFieldsError, CantFindIdError } = require('../src/utils/errors')
 
 
 const cors = require('cors');
@@ -56,6 +56,9 @@ app.use((e, req, res, next) => {
     }
     if (e instanceof MissingFieldsError) {
         return res.status(400).json({ error: e.message })
+    }
+    if (e instanceof CantFindIdError) {
+        return res.status(404).json({ error: e.message })
     }
     
     res.status(500).json({ error: e.message })
