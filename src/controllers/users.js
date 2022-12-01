@@ -9,6 +9,7 @@ const getUsers = async (req, res) => {
 
   res.json({ users: users });
 };
+
 const getUsersById = async (req, res) => {
   const { id } = req.params;
 
