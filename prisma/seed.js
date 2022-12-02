@@ -74,7 +74,7 @@ async function createComment() {
 async function createCategory() {
   const category = await prisma.category.create({
     data: {
-      name: "cinema",
+      name: "comedy",
     },
   });
 }
