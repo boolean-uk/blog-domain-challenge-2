@@ -56,40 +56,46 @@ const getPosts = async (req, res) => {
   res.status(200).json({ posts });
 };
 
+// const updatePosts = async (req, res) => {
+//   const postId = Number(req.params.postId);
+//   const { title, }
+
+// }
+
 const updatePost = async (req, res) => {
   const userId = Number(req.params.userId);
   const postId = Number(req.params.postId);
   const { title, content, imageUrl, publishedAt, categories } = req.body;
 
-
-  const postToUpdate = await prisma.post.findUniqueOrThrow({
-    where: { id: postId },
+  const postToUpdate = await prisma.post.findFirstOrThrow({
+    where: { id: { equals: postId }, userId: { equals: userId } },
     include: { categories: true },
   });
 
-  const matchingCategories = [];
-  categories.forEach((item) =>
-    matchingCategories.push(
-      ...postToUpdate.categories.filter((category) =>
-        item.name.includes(category.name)
-      )
-    )
-  );
+  const categoriesQuery = {
+    disconnect: [],
+    connect: [],
+    create: [],
+  };
 
-  if (matchingCategories.length) {
-    matchingCategories.forEach(async (category) => {
-      await prisma.post.update({
-        where: { id: Number(postId) },
-        data: {
-          categories: {
-            disconnect: { id: Number(category.id) },
-          },
-        },
+  for (const category of categories) {
+    const alreadyExistOnPost = postToUpdate.categories.find(
+      (c) => c.name === category.name
+    );
+    if (alreadyExistOnPost) {
+      categoriesQuery.disconnect.push({ name: category.name });
+      continue;
+    }
+    const categoryAlreadyExistsButNotConnected =
+      await prisma.category.findUnique({
+        where: { name: category.name },
       });
-    });
+    if (categoryAlreadyExistsButNotConnected) {
+      categoriesQuery.connect.push({ name: category.name });
+      continue;
+    }
+    categoriesQuery.create.push({ name: category.name });
   }
-
-
 
   const updatedPost = await prisma.post.update({
     where: { id: postId },
@@ -98,14 +104,7 @@ const updatePost = async (req, res) => {
       content,
       imageUrl,
       publishedAt: new Date(publishedAt),
-      categories: {
-        connectOrCreate: {
-          where: categories.map((category) => {name: category.name}),
-          create: {
-            name: category.name
-          }
-        }
-      },
+      categories: categoriesQuery,
     },
     include: { user: true, comments: true, categories: true },
   });
@@ -113,30 +112,30 @@ const updatePost = async (req, res) => {
   res.status(201).json({ post: updatedPost });
 };
 
-// const deletePost = async (req, res) => {
-//   const postId = Number(req.params.id);
-//   console.log(postId);
+const deletePost = async (req, res) => {
+  const postId = Number(req.params.id);
+  console.log(postId);
 
-//   const postToDelete = await prisma.post.findUniqueOrThrow({
-//     where: { id: postId },
-//     include: { profile: true },
-//   });
-//   console.log(postToDelete.id);
+  const postToDelete = await prisma.post.findUniqueOrThrow({
+    where: { id: postId },
+    include: { profile: true },
+  });
+  console.log(postToDelete.id);
 
-//   await prisma.profile.delete({
-//     where: { postId: postId },
-//   });
+  await prisma.profile.delete({
+    where: { postId: postId },
+  });
 
-//   await prisma.post.delete({
-//     where: { id: postId },
-//   });
+  await prisma.post.delete({
+    where: { id: postId },
+  });
 
-//   res.status(201).json({ post: postToDelete });
-// };
+  res.status(201).json({ post: postToDelete });
+};
 
 module.exports = {
   createPost,
   getPosts,
   updatePost,
-  // deletePost,
+  deletePost,
 };
