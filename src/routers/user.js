@@ -2,8 +2,8 @@ const express = require("express");
 const {
   createdUser,
   getUsers,
-  getUserById
-  // updateUser,
+  getUserById,
+  updateUser
   // deleteUser,
   // createPost,
   // getPosts,
@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/", createdUser)
 router.get("/", getUsers)
 router.get("/:id", getUserById)
-// router.put("/:id", updateUser);
+router.put("/:id", updateUser);
 // router.delete("/:id", deleteUser);
 
 // router.post("/:userId/posts", createPost);

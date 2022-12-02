@@ -30,6 +30,9 @@ const createdUser = async (req, res) => {
                     pictureUrl
                 },
             },
+        }, 
+        include: {
+            profile: true,
         }
     })
 
@@ -37,8 +40,38 @@ const createdUser = async (req, res) => {
     console.log("created user")
 }
 
+const updateUser = async (req, res) => {
+    const id = Number(req.params.id)
+    const user = await prisma.user.update({
+        where: {
+            id: id,
+        },
+        data: {
+            username: req.body.username,
+            email: req.body.email,
+            password: req.body.password,
+            profile: {
+              update: {
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                age: req.body.age,
+                pictureUrl: req.body.pictureUrl
+              },
+            },
+          },
+        include: {
+            profile: true,
+        },
+    })
+    res.status(201).json({ user })
+}
+
 const getUsers = async (req, res) => {
-    const users = await prisma.user.findMany()
+    const users = await prisma.user.findMany({
+        include: {
+            profile: true,
+        }}
+    )
 
     res.json({ users })
 }
@@ -53,4 +86,4 @@ const getUserById = async (req, res) => {
     return res.json({ user })
 }
 
-module.exports = { createdUser, getUsers, getUserById }
+module.exports = { createdUser, getUsers, getUserById, updateUser }
