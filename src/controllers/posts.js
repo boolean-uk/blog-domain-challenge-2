@@ -57,13 +57,39 @@ const getPosts = async (req, res) => {
 };
 
 const updatePost = async (req, res) => {
-  console.log(req.params);
   const userId = Number(req.params.userId);
   const postId = Number(req.params.postId);
   const { title, content, imageUrl, publishedAt, categories } = req.body;
 
-  console.log(userId, postId);
-  console.log(title, content, imageUrl, publishedAt, categories);
+
+  const postToUpdate = await prisma.post.findUniqueOrThrow({
+    where: { id: postId },
+    include: { categories: true },
+  });
+
+  const matchingCategories = [];
+  categories.forEach((item) =>
+    matchingCategories.push(
+      ...postToUpdate.categories.filter((category) =>
+        item.name.includes(category.name)
+      )
+    )
+  );
+
+  if (matchingCategories.length) {
+    matchingCategories.forEach(async (category) => {
+      await prisma.post.update({
+        where: { id: Number(postId) },
+        data: {
+          categories: {
+            disconnect: { id: Number(category.id) },
+          },
+        },
+      });
+    });
+  }
+
+
 
   const updatedPost = await prisma.post.update({
     where: { id: postId },
@@ -73,21 +99,18 @@ const updatePost = async (req, res) => {
       imageUrl,
       publishedAt: new Date(publishedAt),
       categories: {
-        set: [...categories]
-      },
-      user: {
-        connect: { id: userId },
+        connectOrCreate: {
+          where: categories.map((category) => {name: category.name}),
+          create: {
+            name: category.name
+          }
+        }
       },
     },
     include: { user: true, comments: true, categories: true },
   });
 
-  // await prisma.profile.update({
-  //   where: { postId: postId },
-  //   data: { firstName, lastName, age, pictureUrl },
-  // });
-
-  // res.status(201).json({ post: updatedPost });
+  res.status(201).json({ post: updatedPost });
 };
 
 // const deletePost = async (req, res) => {
