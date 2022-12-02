@@ -3,8 +3,8 @@ const {
   createdUser,
   getUsers,
   getUserById,
-  updateUser
-  // deleteUser,
+  updateUser,
+  deleteUser,
   // createPost,
   // getPosts,
   // updatePost,
@@ -16,7 +16,7 @@ router.post("/", createdUser)
 router.get("/", getUsers)
 router.get("/:id", getUserById)
 router.put("/:id", updateUser);
-// router.delete("/:id", deleteUser);
+router.delete("/:id", deleteUser);
 
 // router.post("/:userId/posts", createPost);
 // router.get("/:userId/posts", getPosts);
