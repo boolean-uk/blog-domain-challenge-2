@@ -1,12 +1,7 @@
-const express = require('express')
-const app = express()
-const port = 4000
+const app = require('./server')
+const port = 4040
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
-app.post('/users', (req, res) => {
   res.send('Hello World!')
 })
 

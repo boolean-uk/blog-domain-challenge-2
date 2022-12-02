@@ -1,5 +1,5 @@
 const { Prisma } = require("@prisma/client")
-const prisma = require('../utils/prisma')
+const prisma = require('../utils/prisma.js')
 
 const createPost = async (req, res) => {
     // const {

@@ -1,23 +1,34 @@
-const express = require("express");
+const express = require('express');
 const app = express();
+const { Prisma } = require('@prisma/client');
 
-const cors = require("cors");
-const morgan = require("morgan");
 
-app.disable("x-powered-by");
+const cors = require('cors');
+const morgan = require('morgan');
 
+app.disable('x-powered-by');
+
+// Add middleware
 app.use(cors());
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Tell express to use your routers here
 const userRouter = require("./routers/user");
-app.use("/users", userRouter);
+// const postsRouter = require("./routers/posts");
+// const usersPostsRouter = require("./routers/usersPosts");
 
-const postRouter = require("./routers/post");
-app.use("/posts", postRouter);
+app.use("/user", userRouter);
+// app.use("/posts", postsRouter);
+// app.use("/users", usersPostsRouter);
 
-const categoryRouter = require("./routers/category");
-app.use("/categories", categoryRouter);
 
-module.exports = app;
+
+
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+  })
+
+
+module.exports = app

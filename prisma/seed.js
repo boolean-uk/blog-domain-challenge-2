@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function seed() {
-    await createUser()
+    await createdUser()
     await createProfile()
     await createComment()
     await createPost()
@@ -10,8 +10,8 @@ async function seed() {
     process.exit(0)
 }
 
-async function createUser() {
-    const createUser = await prisma.user.create({
+async function createdUser() {
+    const createdUser = await prisma.user.create({
         data: {
             username: 'Alice00',
             email: "Alice00@gmail.com",
