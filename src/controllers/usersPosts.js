@@ -33,7 +33,6 @@ const getSpecificPosts = async (req, res) => {
 const createPosts = async (req, res) => {
   const { id } = req.params;
   const { title, content, imageUrl, publishedAt, categories } = req.body;
-  console.log(categories);
   const post = await prisma.post.create({
     data: {
       title,
@@ -75,10 +74,6 @@ const updatePost = async (req, res) => {
   const categoriesToDisconnect = [];
   const categoriesToConnect = [];
 
-  // if(!findPost.categories) {
-
-  // }
-
   findPost.categories.forEach((category) => {
     req.body.categories.forEach((element) => {
       category.name === element.name
@@ -103,10 +98,7 @@ const updatePost = async (req, res) => {
       categories: true,
     },
   });
-  console.log("categoriesToDisconnect", categoriesToDisconnect);
-  console.log("categoriesToConnect", categoriesToConnect);
-  console.log("req.body.categories", req.body.categories);
-  console.log("findPost.categories", findPost.categories);
+ 
 
   req.body.categories.forEach(async (category) => {
     const createCategory = await prisma.category.upsert({
@@ -120,7 +112,6 @@ const updatePost = async (req, res) => {
         name: category.name
       }
     });
-    console.log("createCategory", createCategory);
   });
 
   const connectCtg = await prisma.post.update({
@@ -184,7 +175,6 @@ const deletePost = async (req, res) => {
       error: "A user/post with the provided id does not exist",
     });
   }
-  console.log(findUser);
   const deleteComments = await prisma.comment.deleteMany({
     where: { postId: Number(postId) },
   });

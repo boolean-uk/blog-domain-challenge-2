@@ -4,7 +4,6 @@ const { run } = require("jest");
 const prisma = require("../utils/prisma");
 
 const getPosts = async (req, res) => {
-  console.log("HERE");
   const posts = await prisma.post.findMany({
     select: {
       user: true,

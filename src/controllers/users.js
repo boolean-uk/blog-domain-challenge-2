@@ -4,7 +4,6 @@ const { run } = require("jest");
 const prisma = require("../utils/prisma");
 
 const getUsers = async (req, res) => {
-  console.log("HERE");
   const users = await prisma.users.findMany();
 
   res.json({ users: users });
