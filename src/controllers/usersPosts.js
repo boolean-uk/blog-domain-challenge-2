@@ -81,25 +81,7 @@ const updatePost = async (req, res) => {
         : categoriesToConnect.push(element);
     });
   });
-  const disconnectCtg = await prisma.post.update({
-    where: {
-      id: Number(userId),
-    },
-    data: {
-      title,
-      content,
-      imageUrl,
-      createdAt: publishedAt,
-      categories: {
-        disconnect: categoriesToDisconnect,
-      },
-    },
-    include: {
-      categories: true,
-    },
-  });
  
-
   req.body.categories.forEach(async (category) => {
     const createCategory = await prisma.category.upsert({
       where: {
@@ -124,6 +106,7 @@ const updatePost = async (req, res) => {
       imageUrl,
       createdAt: publishedAt,
       categories: {
+        disconnect: categoriesToDisconnect,
         connect:
           findPost.categories.length === 0
             ? req.body.categories
