@@ -1,11 +1,9 @@
 const express = require("express")
-const { createPost, getPosts, updatePost, deletePost } = require('../controllers/posts')
+const { getPosts } = require('../controllers/posts')
 const router = express.Router()
 
-router.post('/:userId/posts/', createPost)
-router.get('/:userId/posts/', getPosts)
-router.put('/:userId/posts/:postId', updatePost)
-// router.delete('/:id/posts/:id', deletePost)
+
+router.get('/', getPosts)
 
 
 module.exports = router
