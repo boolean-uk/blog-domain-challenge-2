@@ -38,7 +38,7 @@ model Profile {
 model Comment {
   id        Int       @id @default(autoincrement())
   content   String
-  userId    Int       @unique
+  userId    Int       
   user      User      @relation(fields: [userId], references: [id])
   postId    Int
   post      Post      @relation(fields: [postId], references: [id])

@@ -19,11 +19,13 @@ const userRouter = require("./routers/users");
 const postsRouter = require("./routers/posts");
 const usersPostsRouter = require("./routers/usersPosts");
 const categoriesRouter = require("./routers/categories");
+const commentsRouter = require("./routers/comments");
 
 app.use("/users", userRouter);
 app.use("/posts", postsRouter);
 app.use("/users", usersPostsRouter);
 app.use("/categories", categoriesRouter);
+app.use("/posts", commentsRouter);
 
 app.use((e, req, res, next) => {
   if (e instanceof Prisma.PrismaClientKnownRequestError) {
