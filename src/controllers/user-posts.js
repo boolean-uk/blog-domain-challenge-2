@@ -1,11 +1,27 @@
 const prisma = require("../utils/prisma.js");
+const jwt = require('jsonwebtoken');
 
-const { MissingFieldsError, CantFindIdError } = require("../utils/errors");
+
+const { MissingFieldsError, CantFindIdError, InvalidTokenError, UnauthorizedError } = require("../utils/errors");
 const { post, user } = require("../utils/prisma.js");
 
 const createPost = async (req, res) => {
-  console.log(req.body);
+  const token = req.get('authorization');
   const userId = Number(req.params.userId);
+  let payload = ''
+  console.log('token: ',token)
+
+  try {
+    payload = Number(jwt.verify(token, process.env.JWT_SECRET_KEY))
+  } catch (error) {
+    throw new InvalidTokenError()
+  }
+
+  if (payload !== userId) {
+    console.log(payload, userId)
+    throw new UnauthorizedError()
+  }
+  
   const { title, content, imageUrl, publishedAt, categories } = req.body;
 
   if (!title || !content || !imageUrl || !publishedAt || !categories) {

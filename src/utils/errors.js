@@ -12,5 +12,14 @@ class WrongPasswordError extends Error {
     message = "Wrong password";
     code = 403;
   }
+class InvalidTokenError extends Error {
+    message = "Invalid token";
+    code = 498;
+  }
+
+class UnauthorizedError extends Error {
+    message = "Unauthorized";
+    code = 401;
+  }
   
-  module.exports = { MissingFieldsError, CantFindIdError, WrongPasswordError };
+  module.exports = { MissingFieldsError, CantFindIdError, WrongPasswordError, InvalidTokenError, UnauthorizedError };
