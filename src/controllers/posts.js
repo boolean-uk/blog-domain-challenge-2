@@ -2,6 +2,8 @@ const { Prisma } = require("@prisma/client");
 const { use } = require("express/lib/router");
 const { run } = require("jest");
 const prisma = require("../utils/prisma");
+const jwt = require("jsonwebtoken");
+
 
 const getPosts = async (req, res) => {
   const posts = await prisma.post.findMany({

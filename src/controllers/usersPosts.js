@@ -4,6 +4,8 @@ const { run } = require("jest");
 const { post } = require("../server");
 const { user } = require("../utils/prisma");
 const prisma = require("../utils/prisma");
+const jwt = require("jsonwebtoken");
+const secret = process.env.JWT_SECRET;
 
 const getSpecificPosts = async (req, res) => {
   const { id } = req.params;
@@ -33,142 +35,169 @@ const getSpecificPosts = async (req, res) => {
 const createPosts = async (req, res) => {
   const { id } = req.params;
   const { title, content, imageUrl, publishedAt, categories } = req.body;
-  const post = await prisma.post.create({
-    data: {
-      title,
-      content,
-      imageUrl,
-      createdAt: publishedAt,
-      user: {
-        connect: {
-          id: Number(id),
+
+  try {
+    const auth = req.get("Authorization");
+    jwt.verify(auth, secret);
+
+    const post = await prisma.post.create({
+      data: {
+        title,
+        content,
+        imageUrl,
+        createdAt: publishedAt,
+        user: {
+          connect: {
+            id: Number(id),
+          },
+        },
+        categories: {
+          create: {
+            name: categories[0].name,
+          },
         },
       },
-      categories: {
-        create: {
-          name: categories[0].name,
-        },
+      include: {
+        categories: true,
+        comment: true,
       },
-    },
-    include: {
-      categories: true,
-      comment: true,
-    },
-  });
-  res.status(201).json({ post: post });
+    });
+    res.status(201).json({ post: post });
+  } catch (e) {
+    console.log(e);
+    res.status(401).json({ message: "Invalid token" });
+  }
 };
 
 const updatePost = async (req, res) => {
   const { userId, postId } = req.params;
   const { title, content, imageUrl, publishedAt } = req.body;
 
-  const findPost = await prisma.post.findUnique({
-    where: {
-      id: Number(postId),
-    },
-    include: {
-      categories: true,
-    },
-  });
+  try {
+    const auth = req.get("Authorization");
+    jwt.verify(auth, secret);
 
-  const categoriesToDisconnect = [];
-  const categoriesToConnect = [];
-
-  findPost.categories.forEach((category) => {
-    req.body.categories.forEach((element) => {
-      category.name === element.name
-        ? categoriesToDisconnect.push(element)
-        : categoriesToConnect.push(element);
-    });
-  });
- 
-  req.body.categories.forEach(async (category) => {
-    const createCategory = await prisma.category.upsert({
+    const findPost = await prisma.post.findUnique({
       where: {
-        name: category.name,
+        id: Number(postId),
       },
-      update:{
-        name: category.name
+      include: {
+        categories: true,
       },
-      create:{
-        name: category.name
-      }
     });
-  });
 
-  const connectCtg = await prisma.post.update({
-    where: {
-      id: Number(userId),
-    },
-    data: {
-      title,
-      content,
-      imageUrl,
-      createdAt: publishedAt,
-      categories: {
-        disconnect: categoriesToDisconnect,
-        connect:
-          findPost.categories.length === 0
-            ? req.body.categories
-            : categoriesToConnect,
+    const categoriesToDisconnect = [];
+    const categoriesToConnect = [];
+
+    findPost.categories.forEach((category) => {
+      req.body.categories.forEach((element) => {
+        category.name === element.name
+          ? categoriesToDisconnect.push(element)
+          : categoriesToConnect.push(element);
+      });
+    });
+
+    req.body.categories.forEach(async (category) => {
+      const createCategory = await prisma.category.upsert({
+        where: {
+          name: category.name,
+        },
+        update: {
+          name: category.name,
+        },
+        create: {
+          name: category.name,
+        },
+      });
+    });
+
+    const connectCtg = await prisma.post.update({
+      where: {
+        id: Number(userId),
       },
-    },
-    include: {
-      categories: true,
-    },
-  });
+      data: {
+        title,
+        content,
+        imageUrl,
+        createdAt: publishedAt,
+        categories: {
+          disconnect: categoriesToDisconnect,
+          connect:
+            findPost.categories.length === 0
+              ? req.body.categories
+              : categoriesToConnect,
+        },
+      },
+      include: {
+        categories: true,
+      },
+    });
 
-  res.status(201).json({ user: connectCtg });
+    res.status(201).json({ user: connectCtg });
+  } catch (e) {
+    console.log(e)
+    res.status(401).json({ message: "Invalid token" });
+  }
 };
 
 const deletePost = async (req, res) => {
   const { userId, postId } = req.params;
 
-  const findUser = await prisma.user.findUnique({
-    where: {
-      id: Number(userId),
-    },
-    include: {
-      profile: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          age: true,
-          pictureUrl: true,
-          createdAt: true,
-          updatedAt: true,
+  try {
+    const auth = req.get("Authorization");
+    jwt.verify(auth, secret);
+
+    const findUser = await prisma.user.findUnique({
+      where: {
+        id: Number(userId),
+      },
+      include: {
+        profile: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            age: true,
+            pictureUrl: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        comment: true,
+        post: {
+          select: {
+            categories: true,
+          },
         },
       },
-      comment: true,
-      post: {
-        select: {
-          categories: true,
-        },
-      },
-    },
-  });
-  const findPost = await prisma.post.findUnique({
-    where: {
-      id: Number(postId),
-    },
-  });
-  if (!findUser || !findPost) {
-    return res.status(404).json({
-      error: "A user/post with the provided id does not exist",
     });
+    const findPost = await prisma.post.findUnique({
+      where: {
+        id: Number(postId),
+      },
+    });
+    if (!findUser || !findPost) {
+      return res.status(404).json({
+        error: "A user/post with the provided id does not exist",
+      });
+    }
+    const deleteComments = await prisma.comment.deleteMany({
+      where: { postId: Number(postId) },
+    });
+  
+    const deletedPost = await prisma.post.delete({
+      where: {
+        id: Number(postId),
+      },
+    });
+  
+    res.status(201).json({ post: deletedPost });
+  } catch (e) {
+    console.log(e)
+    res.status(401).json({ message: "Invalid token" })
   }
-  const deleteComments = await prisma.comment.deleteMany({
-    where: { postId: Number(postId) },
-  });
 
-  const deletedPost = await prisma.post.delete({
-    where: {
-      id: Number(postId),
-    },
-  });
 
-  res.status(201).json({ post: deletedPost });
 };
 
 module.exports = { getSpecificPosts, createPosts, updatePost, deletePost };

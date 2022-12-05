@@ -2,6 +2,27 @@ const { Prisma } = require("@prisma/client");
 const { use } = require("express/lib/router");
 const { run } = require("jest");
 const prisma = require("../utils/prisma");
+const jwt = require("jsonwebtoken");
+
+const secret = process.env.JWT_SECRET;
+
+const loginUser = async (req, res) => {
+  const { username, password } = req.body;
+
+  const user = await prisma.user.findFirst({
+    where: {
+      username,
+    },
+  });
+
+  if (user.password !== password || user.username !== username) {
+    return res.status(404).json({
+      error: "Invalid username or password",
+    });
+  }
+  const token = jwt.sign({ username }, secret);
+  res.json(token);
+};
 
 const getUsers = async (req, res) => {
   const users = await prisma.users.findMany();
@@ -9,7 +30,7 @@ const getUsers = async (req, res) => {
   res.json({ users: users });
 };
 
-const getUsersById = async (req, res) => {
+async function getUsersById(req, res) {
   const { id } = req.params;
 
   const user = await prisma.user.findUnique({
@@ -18,7 +39,7 @@ const getUsersById = async (req, res) => {
     },
   });
   return res.json({ user: user });
-};
+}
 
 const createUser = async (req, res) => {
   const { username, email, password, firstName, lastName, age, pictureUrl } =
@@ -141,11 +162,15 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   const { id } = req.params;
 
-  const findUser = await prisma.user.findUnique({
-    where: {
-      id: Number(id),
-    },
-    include: {
+  try {
+    const auth = req.get("Authorization");
+    jwt.verify(auth, secret);
+
+    const findUser = await prisma.user.findUnique({
+      where: {
+        id: Number(id),
+      },
+      include: {
         profile: {
           select: {
             id: true,
@@ -158,29 +183,39 @@ const deleteUser = async (req, res) => {
           },
         },
       },
-  });
-  if (!findUser) {
-    return res.status(404).json({
-      error: "A user with the provided id does not exist",
     });
+    if (!findUser) {
+      return res.status(404).json({
+        error: "A user with the provided id does not exist",
+      });
+    }
+
+    const deletePosts = await prisma.post.deleteMany({
+      where: { userId: Number(id) },
+    });
+    const deleteComments = await prisma.comment.deleteMany({
+      where: { userId: Number(id) },
+    });
+
+    const deleteProfile = await prisma.profile.deleteMany({
+      where: { userId: Number(id) },
+    });
+
+    const user = await prisma.user.delete({
+      where: { id: Number(id) },
+    });
+
+    res.status(201).json({ user: findUser });
+  } catch (e) {
+    res.status(401).json({ message: "Invalid token" });
   }
-
-  const deletePosts = await prisma.post.deleteMany({
-    where: { userId: Number(id) },
-  })
-  const deleteComments = await prisma.comment.deleteMany({
-    where: { userId: Number(id) },
-  })
-
-  const deleteProfile = await prisma.profile.deleteMany({
-    where: { userId: Number(id) },
-  })
-
-  const user = await prisma.user.delete({
-    where: { id: Number(id) },
-  });
-
-  res.status(201).json({ user: findUser });
 };
 
-module.exports = { getUsers, getUsersById, createUser, updateUser, deleteUser };
+module.exports = {
+  getUsers,
+  getUsersById,
+  createUser,
+  updateUser,
+  deleteUser,
+  loginUser,
+};
