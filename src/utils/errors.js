@@ -9,7 +9,7 @@ class CantFindIdError extends Error {
   }
 
 class WrongPasswordError extends Error {
-    message = "Wrong password";
+    message = "Wrong username or password";
     code = 403;
   }
 class InvalidTokenError extends Error {

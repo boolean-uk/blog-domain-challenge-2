@@ -11,12 +11,12 @@ const createPost = async (req, res) => {
   let payload = ''
 
   try {
-    payload = Number(jwt.verify(token, process.env.JWT_SECRET_KEY))
+    payload = jwt.verify(token, process.env.JWT_SECRET_KEY)
   } catch (error) {
     throw new InvalidTokenError()
   }
-
-  if (payload !== userId) {
+  console.log(payload.id, userId)
+  if (payload.id !== userId) {
     throw new UnauthorizedError()
   }
   
