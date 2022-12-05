@@ -1,6 +1,17 @@
 const { Prisma } = require("@prisma/client")
 const prisma = require('../utils/prisma.js')
 
+function checkAuthorization(){
+    try {
+        payload = jwt.verify(token, process.env.JWT_SECRET_KEY)
+        if (payload.id !== id) {
+            return new res.json({ error: "Unauthorized access" })
+          }
+      } catch (e) {
+        return res.json({ error: "Invalid token" })
+      }
+}
+
 const createdUser = async (req, res) => {
     const {
         username,
@@ -50,6 +61,7 @@ const createdUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const id = Number(req.params.id)
+    checkAuthorization()
     try {
         const user = await prisma.user.update({
             where: {
@@ -87,6 +99,7 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
     const id = Number(req.params.id)
+    checkAuthorization()
     try {
         const deleteUser = await prisma.user.findUniqueOrThrow({
             where: {id: id},

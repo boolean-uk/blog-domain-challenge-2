@@ -1,8 +1,20 @@
 const { Prisma } = require("@prisma/client")
 const prisma = require('../utils/prisma.js')
 
+function checkAuthorization(){
+    try {
+        payload = jwt.verify(token, process.env.JWT_SECRET_KEY)
+        if (payload.id !== id) {
+            return new res.json({ error: "Unauthorized access" })
+          }
+      } catch (e) {
+        return res.json({ error: "Invalid token" })
+      }
+}
+
 const createCategory = async (req, res) => {
     const { name } = req.body
+    checkAuthorization()
     if (!name) {
         return res.status(400).json({
             error: "Missing name in request body"
@@ -27,6 +39,7 @@ const createCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
     const id = Number(req.params.id)
     const { name } = req.body
+    checkAuthorization()
     if (!name) {
         return res.status(400).json({
             error: "Missing name in request body"
@@ -54,6 +67,7 @@ const updateCategory = async (req, res) => {
 
 const deleteCategory = async (req, res) => {
     const id = Number(req.params.id)
+    checkAuthorization()
     try {
         const deleteCategory = await prisma.category.findUniqueOrThrow({
             where: {id: id},
