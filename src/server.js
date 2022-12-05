@@ -25,6 +25,8 @@ const postsRouter = require("./routers/posts");
 app.use("/posts", postsRouter);
 const commentsRouter = require("./routers/comments");
 app.use("/posts/", commentsRouter);
+const loginRouter = require("./routers/login");
+app.use("/login/", loginRouter);
 
 // Error handling
 app.use((e, req, res, next) => {
