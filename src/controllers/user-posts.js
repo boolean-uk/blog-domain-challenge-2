@@ -9,7 +9,6 @@ const createPost = async (req, res) => {
   const token = req.get('authorization');
   const userId = Number(req.params.userId);
   let payload = ''
-  console.log('token: ',token)
 
   try {
     payload = Number(jwt.verify(token, process.env.JWT_SECRET_KEY))
@@ -18,7 +17,6 @@ const createPost = async (req, res) => {
   }
 
   if (payload !== userId) {
-    console.log(payload, userId)
     throw new UnauthorizedError()
   }
   
@@ -132,14 +130,12 @@ const deletePost = async (req, res) => {
   const userId = Number(req.params.userId);
   const postId = Number(req.params.postId);
 
-  console.log(postId, userId);
 
   const postToDelete = await prisma.post.findUniqueOrThrow({
     where: { id: postId },
     include: {comments: true, categories: true, user: true }
   });
 
-  console.log(postToDelete)
 
   await prisma.comment.deleteMany({
     where: {postId: postId},

@@ -7,7 +7,6 @@ const { } = require("../utils/prisma.js");
 
 const login = async (req, res) => {
     const loginData = req.body
-    console.log(loginData)
     const user = await prisma.user.findUniqueOrThrow({
         where: {userName: loginData.username}
     })

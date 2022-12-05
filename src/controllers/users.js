@@ -4,7 +4,6 @@ const { MissingFieldsError } = require("../utils/errors");
 const { user } = require("../utils/prisma.js");
 
 const createUser = async (req, res) => {
-  console.log(req.body);
   const { username, email, password, firstName, lastName, age, pictureUrl } =
     req.body;
 
@@ -63,13 +62,11 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   const userId = Number(req.params.id);
-  console.log(userId)
 
   const userToDelete = await prisma.user.findUniqueOrThrow({
     where: {id: userId},
     include: {profile: true}
   })
-  console.log(userToDelete.id)
 
   await prisma.profile.delete({
     where: {userId: userId}

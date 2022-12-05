@@ -2,7 +2,7 @@ const express = require("express");
 require("express-async-errors");
 const app = express();
 const { Prisma } = require("@prisma/client");
-const { MissingFieldsError, CantFindIdError, InvalidTokenError } = require("../src/utils/errors");
+const { MissingFieldsError, CantFindIdError, InvalidTokenError, UnauthorizedError } = require("../src/utils/errors");
 
 const cors = require("cors");
 const morgan = require("morgan");
@@ -56,6 +56,9 @@ app.use((e, req, res, next) => {
     return res.status(e.code).json({ error: e.message });
   }
   if (e instanceof InvalidTokenError) {
+    return res.status(e.code).json({ error: e.message });
+  }
+  if (e instanceof UnauthorizedError) {
     return res.status(e.code).json({ error: e.message });
   }
 

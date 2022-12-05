@@ -9,8 +9,6 @@ const getPosts = async (req, res) => {
   };
 
   const { page, perPage, order_by } = req.query;
-  console.log(order_by);
-  console.log(orderByObj[order_by]);
   const posts = await prisma.post.findMany({
     skip: page ? perPage * (page - 1) : undefined,
     take: perPage ? Number(perPage) : undefined,
